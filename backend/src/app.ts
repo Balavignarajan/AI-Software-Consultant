@@ -5,6 +5,8 @@ import { config } from "./config/env.js";
 import { pool } from "./db/index.js";
 import { errorHandler } from "./middleware/error-handler.js";
 import { notFound } from "./middleware/not-found.js";
+import { authRouter } from "./modules/auth/auth.route.js";
+import { API_PREFIX } from "./shared/constants/app.js";
 
 const app = express();
 const PORT = config.PORT;
@@ -19,6 +21,8 @@ app.get("/api/health", (_req, res) => {
     timestamp: new Date().toISOString(),
   });
 });
+
+app.use(`${API_PREFIX}/auth`, authRouter);
 
 app.use(notFound);
 app.use(errorHandler);
