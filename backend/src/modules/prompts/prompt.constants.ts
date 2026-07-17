@@ -1,0 +1,31 @@
+export const PROMPT_TYPES = {
+  CONSULTATION: "CONSULTATION",
+  FEATURE_DETECTION: "FEATURE_DETECTION",
+  REQUIREMENT_SUMMARY: "REQUIREMENT_SUMMARY",
+  ESTIMATION: "ESTIMATION",
+  PROPOSAL: "PROPOSAL",
+  EMAIL: "EMAIL",
+  MEETING_SUMMARY: "MEETING_SUMMARY",
+} as const;
+
+export type PromptType = (typeof PROMPT_TYPES)[keyof typeof PROMPT_TYPES];
+
+export const PROMPT_DEFAULTS = {
+  MAX_CONVERSATION_HISTORY: 20,
+  DEFAULT_SYSTEM_ROLE: "system",
+} as const;
+
+export const RESERVED_TEMPLATE_VARIABLES = {
+  ORGANIZATION_NAME: "organizationName",
+  ORGANIZATION_ID: "organizationId",
+  CONSULTATION_TITLE: "consultationTitle",
+  CONSULTATION_ID: "consultationId",
+  INDUSTRY: "industry",
+  PROJECT_TYPE: "projectType",
+  BUDGET_RANGE: "budgetRange",
+  TIMELINE: "timeline",
+  USER_MESSAGE: "userMessage",
+} as const;
+
+export type ReservedTemplateVariable =
+  (typeof RESERVED_TEMPLATE_VARIABLES)[keyof typeof RESERVED_TEMPLATE_VARIABLES];

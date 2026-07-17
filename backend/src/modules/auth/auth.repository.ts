@@ -304,6 +304,36 @@ export class AuthRepository {
     });
   }
 
+  async findAllPermissionIds(executor: DbExecutor = db): Promise<string[]> {
+    const rows = await executor
+      .select({ id: permissions.id })
+      .from(permissions);
+
+    return rows.map((row) => row.id);
+  }
+
+  async assignPermissionsToRole(
+    roleId: string,
+    permissionIds: string[],
+    executor: DbExecutor = db,
+  ): Promise<void> {
+    if (permissionIds.length === 0) {
+      return;
+    }
+
+    await executor
+      .insert(rolePermissions)
+      .values(
+        permissionIds.map((permissionId) => ({
+          roleId,
+          permissionId,
+        })),
+      )
+      .onConflictDoNothing({
+        target: [rolePermissions.roleId, rolePermissions.permissionId],
+      });
+  }
+
   async createOrganizationSetting(
     organizationId: string,
     data: CreateSettingData,

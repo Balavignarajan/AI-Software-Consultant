@@ -1,0 +1,191 @@
+import OpenAI, { APIConnectionError, APIError, APIUserAbortError } from "openai";
+import type {
+  ChatCompletionCreateParamsNonStreaming,
+  ChatCompletionMessageParam,
+} from "openai/resources/chat/completions";
+import { config } from "../../../config/env.js";
+import { HTTP_STATUS } from "../../../shared/constants/http-status.js";
+import { AppError } from "../../../shared/errors/app-error.js";
+import { logger } from "../../../shared/logger/logger.js";
+import { AI_PROVIDERS, AI_ROLES } from "../ai.constants.js";
+import type {
+  AIMessage,
+  AIProvider,
+  AIRequest,
+  AIResponse,
+} from "../ai.types.js";
+
+function mapMessagesToOpenAI(
+  request: AIRequest,
+): ChatCompletionMessageParam[] {
+  const hasSystemMessage = request.messages.some(
+    (message) => message.role === AI_ROLES.SYSTEM,
+  );
+
+  const mappedMessages: ChatCompletionMessageParam[] = request.messages.map(
+    (message) => {
+      if (message.name) {
+        return {
+          role: message.role,
+          content: message.content,
+          name: message.name,
+        } as ChatCompletionMessageParam;
+      }
+
+      return {
+        role: message.role,
+        content: message.content,
+      };
+    },
+  );
+
+  if (request.systemPrompt && !hasSystemMessage) {
+    return [
+      {
+        role: AI_ROLES.SYSTEM,
+        content: request.systemPrompt,
+      },
+      ...mappedMessages,
+    ];
+  }
+
+  return mappedMessages;
+}
+
+function mapRequestToOpenAI(
+  request: AIRequest,
+): ChatCompletionCreateParamsNonStreaming {
+  const modelName = request.model.name || config.OPENAI_DEFAULT_MODEL;
+  const maxTokens = request.maxTokens ?? request.model.maxTokens;
+  const temperature = request.temperature ?? request.model.temperature;
+
+  return {
+    model: modelName,
+    messages: mapMessagesToOpenAI(request),
+    ...(maxTokens !== undefined ? { max_tokens: maxTokens } : {}),
+    ...(temperature !== undefined ? { temperature } : {}),
+  };
+}
+
+function mapOpenAIError(error: unknown): AppError {
+  if (error instanceof AppError) {
+    return error;
+  }
+
+  if (error instanceof APIError) {
+    if (error.status === 401 || error.status === 403) {
+      return new AppError(
+        "AI provider authentication failed",
+        HTTP_STATUS.UNAUTHORIZED,
+      );
+    }
+
+    if (error.status === 429) {
+      return new AppError(
+        "AI provider rate limit exceeded",
+        HTTP_STATUS.INTERNAL_SERVER_ERROR,
+      );
+    }
+
+    if (error.status === 400) {
+      return new AppError(
+        "AI provider rejected the request",
+        HTTP_STATUS.BAD_REQUEST,
+      );
+    }
+
+    return new AppError(
+      "AI provider request failed",
+      HTTP_STATUS.INTERNAL_SERVER_ERROR,
+    );
+  }
+
+  if (error instanceof APIConnectionError || error instanceof APIUserAbortError) {
+    return new AppError(
+      "AI provider connection failed",
+      HTTP_STATUS.INTERNAL_SERVER_ERROR,
+    );
+  }
+
+  return new AppError(
+    "AI provider request failed",
+    HTTP_STATUS.INTERNAL_SERVER_ERROR,
+  );
+}
+
+export class OpenAIProvider implements AIProvider {
+  readonly name = AI_PROVIDERS.OPENAI;
+
+  private readonly client: OpenAI;
+
+  constructor(client?: OpenAI) {
+    if (!config.OPENAI_API_KEY) {
+      logger.warn("OPENAI_API_KEY is not configured");
+    }
+
+    this.client =
+      client ??
+      new OpenAI({
+        apiKey: config.OPENAI_API_KEY,
+        timeout: config.OPENAI_TIMEOUT,
+      });
+  }
+
+  async generateResponse(request: AIRequest): Promise<AIResponse> {
+    if (!config.OPENAI_API_KEY) {
+      throw new AppError(
+        "AI provider is not configured",
+        HTTP_STATUS.INTERNAL_SERVER_ERROR,
+      );
+    }
+
+    const startedAt = Date.now();
+
+    try {
+      const payload = mapRequestToOpenAI(request);
+      const completion = await this.client.chat.completions.create(payload);
+      const latencyMs = Date.now() - startedAt;
+
+      const choice = completion.choices[0];
+      const content = choice?.message?.content;
+
+      if (!content) {
+        throw new AppError(
+          "AI provider returned an empty response",
+          HTTP_STATUS.INTERNAL_SERVER_ERROR,
+        );
+      }
+
+      const assistantMessage: AIMessage = {
+        role: AI_ROLES.ASSISTANT,
+        content,
+      };
+
+      return {
+        message: assistantMessage,
+        usage: {
+          promptTokens: completion.usage?.prompt_tokens ?? 0,
+          completionTokens: completion.usage?.completion_tokens ?? 0,
+          totalTokens: completion.usage?.total_tokens ?? 0,
+        },
+        metadata: {
+          provider: this.name,
+          model: completion.model,
+          finishReason: choice.finish_reason ?? undefined,
+          latencyMs,
+          requestId: completion.id,
+        },
+      };
+    } catch (error) {
+      const appError = mapOpenAIError(error);
+      logger.error(
+        `OpenAIProvider generateResponse failed: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`,
+      );
+      throw appError;
+    }
+  }
+}
+
+export const openAIProvider = new OpenAIProvider();

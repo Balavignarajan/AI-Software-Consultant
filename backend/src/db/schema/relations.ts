@@ -1,6 +1,8 @@
 import { relations } from "drizzle-orm";
+import { aiGenerations } from "./ai-generations.js";
 import { auditLogs } from "./audit-logs.js";
 import { consultations } from "./consultations.js";
+import { conversationMessages } from "./conversation-messages.js";
 import { organizationSettings } from "./organization-settings.js";
 import { organizations } from "./organizations.js";
 import { permissions } from "./permissions.js";
@@ -18,6 +20,8 @@ export const organizationsRelations = relations(organizations, ({ many }) => ({
   settings: many(organizationSettings),
   auditLogs: many(auditLogs),
   consultations: many(consultations),
+  conversationMessages: many(conversationMessages),
+  aiGenerations: many(aiGenerations),
 }));
 
 export const usersRelations = relations(users, ({ one, many }) => ({
@@ -41,6 +45,7 @@ export const usersRelations = relations(users, ({ one, many }) => ({
   assignedConsultations: many(consultations, {
     relationName: "consultationAssignee",
   }),
+  conversationMessages: many(conversationMessages),
 }));
 
 export const rolesRelations = relations(roles, ({ one, many }) => ({
@@ -132,19 +137,58 @@ export const auditLogsRelations = relations(auditLogs, ({ one }) => ({
   }),
 }));
 
-export const consultationsRelations = relations(consultations, ({ one }) => ({
+export const consultationsRelations = relations(
+  consultations,
+  ({ one, many }) => ({
+    organization: one(organizations, {
+      fields: [consultations.organizationId],
+      references: [organizations.id],
+    }),
+    creator: one(users, {
+      fields: [consultations.createdBy],
+      references: [users.id],
+      relationName: "consultationCreator",
+    }),
+    assignee: one(users, {
+      fields: [consultations.assignedTo],
+      references: [users.id],
+      relationName: "consultationAssignee",
+    }),
+    messages: many(conversationMessages),
+    aiGenerations: many(aiGenerations),
+  }),
+);
+
+export const conversationMessagesRelations = relations(
+  conversationMessages,
+  ({ one, many }) => ({
+    consultation: one(consultations, {
+      fields: [conversationMessages.consultationId],
+      references: [consultations.id],
+    }),
+    organization: one(organizations, {
+      fields: [conversationMessages.organizationId],
+      references: [organizations.id],
+    }),
+    creator: one(users, {
+      fields: [conversationMessages.createdBy],
+      references: [users.id],
+    }),
+    aiGenerations: many(aiGenerations),
+  }),
+);
+
+export const aiGenerationsRelations = relations(aiGenerations, ({ one }) => ({
   organization: one(organizations, {
-    fields: [consultations.organizationId],
+    fields: [aiGenerations.organizationId],
     references: [organizations.id],
   }),
-  creator: one(users, {
-    fields: [consultations.createdBy],
-    references: [users.id],
-    relationName: "consultationCreator",
+  consultation: one(consultations, {
+    fields: [aiGenerations.consultationId],
+    references: [consultations.id],
   }),
-  assignee: one(users, {
-    fields: [consultations.assignedTo],
-    references: [users.id],
-    relationName: "consultationAssignee",
+  conversationMessage: one(conversationMessages, {
+    fields: [aiGenerations.conversationMessageId],
+    references: [conversationMessages.id],
   }),
 }));

@@ -11,6 +11,8 @@ export type EnvConfig = {
   ACCESS_TOKEN_EXPIRES: string;
   REFRESH_TOKEN_EXPIRES: string;
   OPENAI_API_KEY: string;
+  OPENAI_DEFAULT_MODEL: string;
+  OPENAI_TIMEOUT: number;
   APP_NAME: string;
   APP_VERSION: string;
 };
@@ -33,6 +35,9 @@ function loadEnv(): EnvConfig {
     ACCESS_TOKEN_EXPIRES: process.env.ACCESS_TOKEN_EXPIRES ?? "15m",
     REFRESH_TOKEN_EXPIRES: process.env.REFRESH_TOKEN_EXPIRES ?? "7d",
     OPENAI_API_KEY: process.env.OPENAI_API_KEY ?? "",
+    OPENAI_DEFAULT_MODEL:
+      process.env.OPENAI_DEFAULT_MODEL ?? "gpt-4o-mini",
+    OPENAI_TIMEOUT: Number(process.env.OPENAI_TIMEOUT) || 60_000,
     APP_NAME: process.env.APP_NAME ?? "AI Software Consultant",
     APP_VERSION: process.env.APP_VERSION ?? "1.0.0",
   };

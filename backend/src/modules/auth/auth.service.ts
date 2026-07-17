@@ -208,6 +208,13 @@ export class AuthService {
           tx,
         );
 
+        const permissionIds = await authRepository.findAllPermissionIds(tx);
+        await authRepository.assignPermissionsToRole(
+          adminRole.id,
+          permissionIds,
+          tx,
+        );
+
         await authRepository.assignRoleToUser(
           user.id,
           adminRole.id,

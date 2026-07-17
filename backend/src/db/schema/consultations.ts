@@ -5,7 +5,7 @@ import {
   uuid,
   varchar,
 } from "drizzle-orm/pg-core";
-import { createdAt, updatedAt } from "./helpers.js";
+import { createdAt, deletedAt, updatedAt } from "./helpers.js";
 import { organizations } from "./organizations.js";
 import { users } from "./users.js";
 
@@ -32,6 +32,7 @@ export const consultations = pgTable(
     completedAt: timestamp("completed_at", { withTimezone: true }),
     createdAt,
     updatedAt,
+    deletedAt,
   },
   (table) => [
     index("consultations_organization_id_idx").on(table.organizationId),

@@ -8,6 +8,27 @@
       "when": 1784325644753,
       "tag": "0000_foundation",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1784327088807,
+      "tag": "0001_consultations_soft_delete",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1784327210079,
+      "tag": "0002_conversation_messages",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1784327678080,
+      "tag": "0003_ai_generations",
+      "breakpoints": true
     }
   ]
 }

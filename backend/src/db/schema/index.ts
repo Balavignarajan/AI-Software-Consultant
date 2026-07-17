@@ -1,4 +1,8 @@
-export { verificationTokenTypeEnum } from "./enums.js";
+export {
+  aiGenerationStatusEnum,
+  messageSenderTypeEnum,
+  verificationTokenTypeEnum,
+} from "./enums.js";
 export { createdAt, deletedAt, updatedAt } from "./helpers.js";
 
 export { organizations } from "./organizations.js";
@@ -13,6 +17,8 @@ export { organizationSettings } from "./organization-settings.js";
 export { userSettings } from "./user-settings.js";
 export { auditLogs } from "./audit-logs.js";
 export { consultations } from "./consultations.js";
+export { conversationMessages } from "./conversation-messages.js";
+export { aiGenerations } from "./ai-generations.js";
 
 export {
   organizationsRelations,
@@ -27,4 +33,6 @@ export {
   userSettingsRelations,
   auditLogsRelations,
   consultationsRelations,
+  conversationMessagesRelations,
+  aiGenerationsRelations,
 } from "./relations.js";
