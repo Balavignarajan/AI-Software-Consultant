@@ -1,0 +1,21 @@
+export type ProposalDto = {
+  id: string;
+  organizationId: string;
+  consultationId: string;
+  requirementSummaryId: string;
+  estimationId: string;
+  title: string;
+  executiveSummary: string;
+  scopeOfWork: string[];
+  deliverables: string[];
+  timeline: string;
+  assumptions: string;
+  exclusions: string;
+  pricingNotes: string;
+  proposalMarkdown: string;
+  generatedBy: "AI" | "USER";
+  version: number;
+  status: "DRAFT" | "REVIEWED" | "APPROVED";
+  createdAt: Date;
+  updatedAt: Date;
+};

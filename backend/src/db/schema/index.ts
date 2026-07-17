@@ -1,6 +1,11 @@
 export {
   aiGenerationStatusEnum,
+  featureComplexityEnum,
+  featurePriorityEnum,
   messageSenderTypeEnum,
+  proposalStatusEnum,
+  requirementSummaryGeneratedByEnum,
+  requirementSummaryStatusEnum,
   verificationTokenTypeEnum,
 } from "./enums.js";
 export { createdAt, deletedAt, updatedAt } from "./helpers.js";
@@ -19,6 +24,16 @@ export { auditLogs } from "./audit-logs.js";
 export { consultations } from "./consultations.js";
 export { conversationMessages } from "./conversation-messages.js";
 export { aiGenerations } from "./ai-generations.js";
+export { requirementSummaries } from "./requirement-summaries.js";
+export type { StructuredRequirementSummary } from "./requirement-summaries.js";
+export { detectedFeatures } from "./detected-features.js";
+export { projectEstimations } from "./project-estimations.js";
+export type {
+  EstimationBreakdownItem,
+  EstimationRisk,
+} from "./project-estimations.js";
+export { projectProposals } from "./project-proposals.js";
+export { featureLibrary } from "./feature-library.js";
 
 export {
   organizationsRelations,
@@ -35,4 +50,9 @@ export {
   consultationsRelations,
   conversationMessagesRelations,
   aiGenerationsRelations,
+  requirementSummariesRelations,
+  detectedFeaturesRelations,
+  projectEstimationsRelations,
+  projectProposalsRelations,
+  featureLibraryRelations,
 } from "./relations.js";

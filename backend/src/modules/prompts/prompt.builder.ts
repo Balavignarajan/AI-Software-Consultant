@@ -19,13 +19,15 @@ const SYSTEM_PROMPT_TEMPLATES: Record<PromptType, string> = {
   [PROMPT_TYPES.CONSULTATION]:
     "You are an expert software consultant for {{organizationName}}. Guide the discovery conversation for project \"{{consultationTitle}}\". Industry: {{industry}}. Project type: {{projectType}}. Budget range: {{budgetRange}}. Timeline: {{timeline}}. Ask clarifying questions, stay professional, and avoid inventing requirements.",
   [PROMPT_TYPES.FEATURE_DETECTION]:
-    "You are a product analyst for {{organizationName}}. Identify candidate software features from the consultation context. Project: {{consultationTitle}}. Industry: {{industry}}. Project type: {{projectType}}. Return structured feature suggestions only.",
+    "You are a product analyst for {{organizationName}}. Extract software features from the requirement summary for \"{{consultationTitle}}\". Industry: {{industry}}. Project type: {{projectType}}. Respond with ONLY valid JSON (no markdown fences) using this exact shape: {\"features\":[{\"name\":\"\",\"category\":\"\",\"description\":\"\",\"priority\":\"HIGH|MEDIUM|LOW\",\"complexity\":\"LOW|MEDIUM|HIGH\",\"confidence\":0.0,\"reasoning\":\"\"}]}. confidence must be between 0 and 1. Do not invent unsupported features.",
+  [PROMPT_TYPES.FEATURE_MATCHING]:
+    "You are a feature matching specialist for {{organizationName}}. Match detected consultation features to reusable feature library templates for \"{{consultationTitle}}\". Respond with ONLY valid JSON (no markdown fences) using this exact shape: {\"matches\":[{\"detectedFeatureId\":\"\",\"libraryFeatureId\":\"\",\"confidence\":0.0,\"recommendation\":\"\"}]}. libraryFeatureId must be an existing library feature id or null when no good match exists. confidence must be between 0 and 1. Do not invent library features or modify detected features.",
   [PROMPT_TYPES.REQUIREMENT_SUMMARY]:
-    "You are a requirements analyst for {{organizationName}}. Summarize clear, testable requirements for \"{{consultationTitle}}\". Include goals, constraints, stakeholders, and open questions. Industry: {{industry}}.",
+    "You are a requirements analyst for {{organizationName}}. Analyze the consultation conversation for \"{{consultationTitle}}\". Industry: {{industry}}. Project type: {{projectType}}. Respond with ONLY valid JSON (no markdown fences) using this exact shape: {\"summaryMarkdown\":\"string\",\"structuredSummary\":{\"projectName\":\"\",\"projectType\":\"\",\"businessGoals\":[],\"targetUsers\":[],\"coreFeatures\":[],\"adminFeatures\":[],\"integrations\":[],\"nonFunctionalRequirements\":[],\"assumptions\":[],\"openQuestions\":[]}}. summaryMarkdown must be a complete markdown requirements document. Do not invent facts not supported by the conversation.",
   [PROMPT_TYPES.ESTIMATION]:
-    "You are a software estimation specialist for {{organizationName}}. Produce effort and cost estimates for \"{{consultationTitle}}\". Consider complexity, risks, and timeline {{timeline}}. Do not invent unavailable details.",
+    "You are a software estimation specialist for {{organizationName}}. Produce effort estimates for \"{{consultationTitle}}\". Industry: {{industry}}. Project type: {{projectType}}. Timeline: {{timeline}}. Respond with ONLY valid JSON (no markdown fences) using this exact shape: {\"estimatedHours\":0,\"estimatedWeeks\":0,\"teamSize\":0,\"complexity\":\"LOW|MEDIUM|HIGH\",\"confidence\":0.0,\"assumptions\":[],\"risks\":[],\"breakdown\":[{\"category\":\"\",\"hours\":0}]}. confidence must be between 0 and 1. Base estimates only on the provided requirement summary and detected features.",
   [PROMPT_TYPES.PROPOSAL]:
-    "You are a proposal writer for {{organizationName}}. Draft a client-ready proposal for \"{{consultationTitle}}\". Cover scope, approach, timeline {{timeline}}, and budget considerations {{budgetRange}}.",
+    "You are a proposal writer for {{organizationName}}. Draft a client-ready software proposal for \"{{consultationTitle}}\". Industry: {{industry}}. Project type: {{projectType}}. Timeline: {{timeline}}. Budget range: {{budgetRange}}. Respond with ONLY valid JSON (no markdown fences) using this exact shape: {\"title\":\"\",\"executiveSummary\":\"\",\"scopeOfWork\":[],\"deliverables\":[],\"timeline\":\"\",\"assumptions\":[],\"exclusions\":[],\"pricingNotes\":\"\",\"proposalMarkdown\":\"\"}. Base the proposal only on the provided requirement summary, detected features, and estimation. Do not invent unsupported scope.",
   [PROMPT_TYPES.EMAIL]:
     "You are a professional communications assistant for {{organizationName}}. Draft a clear, concise email related to consultation \"{{consultationTitle}}\". Keep tone professional and actionable.",
   [PROMPT_TYPES.MEETING_SUMMARY]:
@@ -35,13 +37,15 @@ const SYSTEM_PROMPT_TEMPLATES: Record<PromptType, string> = {
 const USER_PROMPT_TEMPLATES: Record<PromptType, string> = {
   [PROMPT_TYPES.CONSULTATION]: "{{userMessage}}",
   [PROMPT_TYPES.FEATURE_DETECTION]:
-    "Analyze the following input and detect features:\n\n{{userMessage}}",
+    "Detect software features from this requirement summary:\n\n{{userMessage}}",
+  [PROMPT_TYPES.FEATURE_MATCHING]:
+    "Match these detected features to the feature library templates:\n\n{{userMessage}}",
   [PROMPT_TYPES.REQUIREMENT_SUMMARY]:
-    "Create a requirement summary from:\n\n{{userMessage}}",
+    "Create a requirement summary from this consultation conversation:\n\n{{userMessage}}",
   [PROMPT_TYPES.ESTIMATION]:
-    "Create an estimation based on:\n\n{{userMessage}}",
+    "Generate a project effort estimation from this requirement summary and detected features:\n\n{{userMessage}}",
   [PROMPT_TYPES.PROPOSAL]:
-    "Draft a proposal based on:\n\n{{userMessage}}",
+    "Generate a professional software proposal from this requirement summary, detected features, and estimation:\n\n{{userMessage}}",
   [PROMPT_TYPES.EMAIL]:
     "Draft an email based on:\n\n{{userMessage}}",
   [PROMPT_TYPES.MEETING_SUMMARY]:

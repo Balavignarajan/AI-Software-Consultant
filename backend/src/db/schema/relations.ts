@@ -3,10 +3,15 @@ import { aiGenerations } from "./ai-generations.js";
 import { auditLogs } from "./audit-logs.js";
 import { consultations } from "./consultations.js";
 import { conversationMessages } from "./conversation-messages.js";
+import { detectedFeatures } from "./detected-features.js";
+import { featureLibrary } from "./feature-library.js";
 import { organizationSettings } from "./organization-settings.js";
 import { organizations } from "./organizations.js";
 import { permissions } from "./permissions.js";
+import { projectEstimations } from "./project-estimations.js";
+import { projectProposals } from "./project-proposals.js";
 import { refreshTokens } from "./refresh-tokens.js";
+import { requirementSummaries } from "./requirement-summaries.js";
 import { rolePermissions } from "./role-permissions.js";
 import { roles } from "./roles.js";
 import { userRoles } from "./user-roles.js";
@@ -22,6 +27,11 @@ export const organizationsRelations = relations(organizations, ({ many }) => ({
   consultations: many(consultations),
   conversationMessages: many(conversationMessages),
   aiGenerations: many(aiGenerations),
+  requirementSummaries: many(requirementSummaries),
+  detectedFeatures: many(detectedFeatures),
+  projectEstimations: many(projectEstimations),
+  projectProposals: many(projectProposals),
+  featureLibrary: many(featureLibrary),
 }));
 
 export const usersRelations = relations(users, ({ one, many }) => ({
@@ -156,6 +166,10 @@ export const consultationsRelations = relations(
     }),
     messages: many(conversationMessages),
     aiGenerations: many(aiGenerations),
+    requirementSummary: many(requirementSummaries),
+    detectedFeatures: many(detectedFeatures),
+    projectEstimation: many(projectEstimations),
+    projectProposal: many(projectProposals),
   }),
 );
 
@@ -190,5 +204,88 @@ export const aiGenerationsRelations = relations(aiGenerations, ({ one }) => ({
   conversationMessage: one(conversationMessages, {
     fields: [aiGenerations.conversationMessageId],
     references: [conversationMessages.id],
+  }),
+}));
+
+export const requirementSummariesRelations = relations(
+  requirementSummaries,
+  ({ one, many }) => ({
+    organization: one(organizations, {
+      fields: [requirementSummaries.organizationId],
+      references: [organizations.id],
+    }),
+    consultation: one(consultations, {
+      fields: [requirementSummaries.consultationId],
+      references: [consultations.id],
+    }),
+    detectedFeatures: many(detectedFeatures),
+    projectEstimations: many(projectEstimations),
+    projectProposals: many(projectProposals),
+  }),
+);
+
+export const detectedFeaturesRelations = relations(
+  detectedFeatures,
+  ({ one }) => ({
+    organization: one(organizations, {
+      fields: [detectedFeatures.organizationId],
+      references: [organizations.id],
+    }),
+    consultation: one(consultations, {
+      fields: [detectedFeatures.consultationId],
+      references: [consultations.id],
+    }),
+    requirementSummary: one(requirementSummaries, {
+      fields: [detectedFeatures.requirementSummaryId],
+      references: [requirementSummaries.id],
+    }),
+  }),
+);
+
+export const projectEstimationsRelations = relations(
+  projectEstimations,
+  ({ one, many }) => ({
+    organization: one(organizations, {
+      fields: [projectEstimations.organizationId],
+      references: [organizations.id],
+    }),
+    consultation: one(consultations, {
+      fields: [projectEstimations.consultationId],
+      references: [consultations.id],
+    }),
+    requirementSummary: one(requirementSummaries, {
+      fields: [projectEstimations.requirementSummaryId],
+      references: [requirementSummaries.id],
+    }),
+    projectProposals: many(projectProposals),
+  }),
+);
+
+export const projectProposalsRelations = relations(
+  projectProposals,
+  ({ one }) => ({
+    organization: one(organizations, {
+      fields: [projectProposals.organizationId],
+      references: [organizations.id],
+    }),
+    consultation: one(consultations, {
+      fields: [projectProposals.consultationId],
+      references: [consultations.id],
+    }),
+    requirementSummary: one(requirementSummaries, {
+      fields: [projectProposals.requirementSummaryId],
+      references: [requirementSummaries.id],
+    }),
+    estimation: one(projectEstimations, {
+      fields: [projectProposals.estimationId],
+      references: [projectEstimations.id],
+    }),
+  }),
+);
+
+export const featureLibraryRelations = relations(featureLibrary, ({ one }) => ({
+  organization: one(organizations, {
+    fields: [featureLibrary.organizationId],
+    references: [organizations.id],
   }),
 }));

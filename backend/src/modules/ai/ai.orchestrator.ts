@@ -2,6 +2,7 @@ import { config } from "../../config/env.js";
 import { logger } from "../../shared/logger/logger.js";
 import {
   PROMPT_TYPES,
+  type PromptType,
 } from "../prompts/prompt.constants.js";
 import { PromptService, promptService } from "../prompts/prompt.service.js";
 import type {
@@ -19,6 +20,7 @@ export type GenerateConversationReplyInput = {
   consultation: ConsultationPromptContext;
   conversationHistory: ConversationPromptMessage[];
   userMessage: string;
+  promptType?: PromptType;
   model?: AIModel;
   maxTokens?: number;
   temperature?: number;
@@ -55,7 +57,7 @@ export class AIOrchestrator {
     };
 
     return this.promptService.buildAIRequest({
-      promptType: PROMPT_TYPES.CONSULTATION,
+      promptType: input.promptType ?? PROMPT_TYPES.CONSULTATION,
       model,
       userMessage: input.userMessage,
       organization: input.organization,
@@ -66,6 +68,7 @@ export class AIOrchestrator {
       metadata: {
         consultationId: input.consultation.id,
         organizationId: input.organization.id,
+        promptType: input.promptType ?? PROMPT_TYPES.CONSULTATION,
         ...input.metadata,
       },
     });
